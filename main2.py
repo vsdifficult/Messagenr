@@ -46,7 +46,7 @@ def open_login_register_window():
     login_register_window.title("Вход и регистрация")
     login_register_window.geometry("300x300+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 100)))
     login_register_window.resizable(False, False)
-    logo = tk.PhotoImage(file='C:/Users/Maksim/Desktop/Python/graphic interface/pngimage.png')
+    logo = tk.PhotoImage(file='pngimage.png')
     login_register_window.iconphoto(False, logo)
 
     register_username_label = Label(login_register_window, text="Имя пользователя:")
@@ -96,7 +96,7 @@ def open_messenger_window():
     messenger_window = Toplevel(main_window)
     messenger_window.title("Мессенджер")
     messenger_window.geometry("500x550+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 250), int(main_window.winfo_screenheight()/2 - 275)))
-    logo = tk.PhotoImage(file='C:/Users/Maksim/Desktop/Python/graphic interface/pngimage.png')
+    logo = tk.PhotoImage(file='pngimage.png')
     messenger_window.iconphoto(False, logo)
 
     message_box = Text(messenger_window)
@@ -128,7 +128,7 @@ login_register_button = Button(main_window, text="Вход и регистрац
 login_register_button.pack()
 main_window.geometry("300x100+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 50)))
 main_window.resizable(False, False)
-logo = tk.PhotoImage(file='C:/Users/Maksim/Desktop/Python/graphic interface/pngimage.png')
+logo = tk.PhotoImage(file='pngimage.png')
 main_window.iconphoto(False, logo)
 
 main_window.mainloop()
