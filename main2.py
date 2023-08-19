@@ -2,6 +2,7 @@ import sqlite3
 from tkinter import *
 from tkinter import PhotoImage
 import tkinter as tk
+
 def register():
     username = register_username_entry.get()
     password = register_password_entry.get()
@@ -21,7 +22,6 @@ def register():
         register_status.config(text="Регистрация успешна!")
         login_register_window.destroy()
 
-
 def login():
     username = login_username_entry.get()
     password = login_password_entry.get()
@@ -36,7 +36,6 @@ def login():
         login_status.config(text="Вход выполнен успешно.")
         open_messenger_window()
         login_register_window.destroy()
-
     else:
         login_status.config(text="Неверное имя пользователя или пароль.")
 
@@ -80,7 +79,7 @@ def open_login_register_window():
 
     login_status = Label(login_register_window, text="")
     login_status.pack()
-    main_window.withdraw()
+
 def send_message():
     message = entry_box.get()
 
@@ -121,17 +120,46 @@ cursor.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTO
 conn.commit()
 conn.close()
 
+def open_chat_window():
+    global chat_window
+    chat_window = Toplevel(main_window)
+    chat_window.title("Чат")
+    chat_window.geometry("300x150+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 75)))
+
+    token_label = Label(chat_window, text="Введите токен пользователя:")
+    token_label.pack()
+
+    token_entry = Entry(chat_window)
+    token_entry.pack()
+
+    start_chat_button = Button(chat_window, text="Начать чат", command=lambda: start_chat(token_entry.get()))
+    start_chat_button.pack()
+
+def start_chat(token):
+    # Здесь вы можете добавить код для начала чата с указанным токеном
+    # Может быть, вы хотите открыть новое окно для чата или выполнить другие действия
+    pass
+
 main_window = Tk()
 main_window.title("Main Window")
 
 login_register_button = Button(main_window, text="Вход и регистрация", command=open_login_register_window)
 login_register_button.pack()
-main_window.geometry("300x100+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 50)))
+
+open_chat_button = Button(main_window, text="Открыть чат", command=open_chat_window)
+open_chat_button.pack()
+
+main_window.geometry("300x200+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 100)))
 main_window.resizable(False, False)
 logo = tk.PhotoImage(file='pngimage.png')
 main_window.iconphoto(False, logo)
 
 main_window.mainloop()
+
+
+
+
+
 
 
 
