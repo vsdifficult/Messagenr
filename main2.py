@@ -20,7 +20,6 @@ def register():
         conn.commit()
         conn.close()
         register_status.config(text="Регистрация успешна!")
-        login_register_window.destroy()
 
 def login():
     username = login_username_entry.get()
@@ -34,8 +33,7 @@ def login():
 
     if user:
         login_status.config(text="Вход выполнен успешно.")
-        open_messenger_window()
-        login_register_window.destroy()
+        open_token_window()
     else:
         login_status.config(text="Неверное имя пользователя или пароль.")
 
@@ -120,25 +118,39 @@ cursor.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTO
 conn.commit()
 conn.close()
 
-def open_chat_window():
+def open_chat_window(token):
     global chat_window
     chat_window = Toplevel(main_window)
     chat_window.title("Чат")
     chat_window.geometry("300x150+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 75)))
 
-    token_label = Label(chat_window, text="Введите токен пользователя:")
+    token_label = Label(chat_window, text="Токен пользователя: " + token)
     token_label.pack()
 
-    token_entry = Entry(chat_window)
+    message_box = Text(chat_window)
+    message_box.pack()
+
+    global entry_box
+    entry_box = Entry(chat_window)
+    entry_box.pack()
+
+    send_button = Button(chat_window, text="Send", command=send_message)
+    send_button.pack()
+
+def open_token_window():
+    global token_window
+    token_window = Toplevel(main_window)
+    token_window.title("Введите токен")
+    token_window.geometry("300x150+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 75)))
+
+    token_label = Label(token_window, text="Введите токен пользователя:")
+    token_label.pack()
+
+    token_entry = Entry(token_window)
     token_entry.pack()
 
-    start_chat_button = Button(chat_window, text="Начать чат", command=lambda: start_chat(token_entry.get()))
-    start_chat_button.pack()
-
-def start_chat(token):
-    # Здесь вы можете добавить код для начала чата с указанным токеном
-    # Может быть, вы хотите открыть новое окно для чата или выполнить другие действия
-    pass
+    open_chat_button = Button(token_window, text="Открыть чат", command=lambda: open_chat_window(token_entry.get()))
+    open_chat_button.pack()
 
 main_window = Tk()
 main_window.title("Main Window")
@@ -146,15 +158,13 @@ main_window.title("Main Window")
 login_register_button = Button(main_window, text="Вход и регистрация", command=open_login_register_window)
 login_register_button.pack()
 
-open_chat_button = Button(main_window, text="Открыть чат", command=open_chat_window)
-open_chat_button.pack()
-
 main_window.geometry("300x200+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 100)))
 main_window.resizable(False, False)
 logo = tk.PhotoImage(file='pngimage.png')
 main_window.iconphoto(False, logo)
 
 main_window.mainloop()
+
 
 
 
