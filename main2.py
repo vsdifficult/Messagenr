@@ -1,195 +1,179 @@
-import sqlite3
-import random
-import string
-from tkinter import *
-from tkinter import PhotoImage
-import tkinter as tk
+import sys
+from pathlib import Path
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QFrame, QStackedWidget
+from PyQt5.QtCore import Qt, QEasingCurve, QVariantAnimation
+from PyQt5.QtGui import QIcon, QPixmap, QPalette, QColor
 
-def generate_token(length=28):
-    characters = string.ascii_letters + string.digits
-    token = ''.join(random.choice(characters) for _ in range(length))
-    return token
+class MainWindow(QWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowTitle('Messenger App')
+        self.setWindowIcon(QIcon('logo.png'))
+        self.setGeometry(100, 100, 600, 400)
 
-conn = sqlite3.connect('users.db')
-cursor = conn.cursor()
-cursor.execute('''CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT, token TEXT)''')
-conn.commit()
-conn.close()
+        app = QApplication.instance()
+        app.setStyleSheet(Path('login.qss').read_text())
+
+        self.layout = QVBoxLayout(self)
+
+        self.menu_frame = QFrame(self)
+        self.menu_frame.setObjectName('menuFrame')
+
+        self.logo_label = QLabel(self)
+        self.logo_label.setPixmap(QPixmap('assets/logo.png'))
+
+        self.menu_layout = QVBoxLayout(self)
+        self.menu_layout.addWidget(self.logo_label)
+
+        self.menu_frame.setLayout(self.menu_layout)
+
+        self.container = QFrame(self)
+        self.container.setObjectName('containerFrame')
+
+        self.layout.addWidget(self.menu_frame)
+        self.layout.addWidget(self.container)
+
+        self.pages = QStackedWidget(self)
+        self.login_page = LoginPage(self)
+        self.register_page = RegisterPage(self)
+
+        self.pages.addWidget(self.login_page)
+        self.pages.addWidget(self.register_page)
+
+        self.container_layout = QVBoxLayout(self.container)
+        self.container_layout.addWidget(self.pages)
+        self.container.setLayout(self.container_layout)
+
+        self.animations = []
+
+        self.start_page = 0
+        self.pages.setCurrentIndex(self.start_page)
+
+        self.show()
+
+    def animate_slide(self, start, end):
+        animation = QVariantAnimation()
+        animation.setStartValue(start)
+        animation.setEndValue(end)
+        animation.setEasingCurve(QEasingCurve.OutQuart)
+        animation.setDuration(400)
+
+        animation.valueChanged.connect(lambda value: self.pages.setGeometry(value, 0, self.pages.width(), self.pages.height()))
+        animation.finished.connect(lambda: self.animations.clear())
+
+        self.animations.clear()
+        self.animations.append(animation)
+        animation.start()
+
+    def show_login(self):
+        self.animate_slide(self.pages.x(), 0)
+        self.pages.setCurrentIndex(0)
+
+    def show_register(self):
+        self.animate_slide(self.pages.x(), -self.pages.width())
+        self.pages.setCurrentIndex(1)
+
+class LoginPage(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setObjectName('loginPage')
+
+        layout = QVBoxLayout(self)
+        self.setLayout(layout)
+
+        heading = QLabel('Welcome Back', self)
+        heading.setObjectName('heading')
+
+        subheading = QLabel('Please enter your email and password to log in.', self)
+        subheading.setObjectName('subheading')
+
+        self.email = QLineEdit(self)
+        self.email.setPlaceholderText('Enter your email')
+
+        self.password = QLineEdit(self)
+        self.password.setEchoMode(QLineEdit.Password)
+        self.password.setPlaceholderText('Enter your password')
+
+        self.btn_login = QPushButton('Login', self)
+        self.btn_login.setObjectName('loginBtn')
+
+        self.btn_register = QPushButton('Register', self)
+        self.btn_register.setObjectName('registerBtn')
+
+        layout.addStretch()
+        layout.addWidget(heading)
+        layout.addWidget(subheading)
+        layout.addWidget(QLabel('Email:', self))
+        layout.addWidget(self.email)
+        layout.addWidget(QLabel('Password:', self))
+        layout.addWidget(self.password)
+        layout.addWidget(self.btn_login)
+        layout.addWidget(self.btn_register)
+        layout.addStretch()
+
+class RegisterPage(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setObjectName('registerPage')
+
+        layout = QVBoxLayout(self)
+        self.setLayout(layout)
+
+        heading = QLabel('Create an Account', self)
+        heading.setObjectName('heading')
+
+        subheading = QLabel('Please enter your information to create an account.', self)
+        subheading.setObjectName('subheading')
+
+        self.username = QLineEdit(self)
+        self.username.setPlaceholderText('Enter a username')
+
+        self.password = QLineEdit(self)
+        self.password.setEchoMode(QLineEdit.Password)
+        self.password.setPlaceholderText('Enter a password')
+
+        self.btn_register = QPushButton('Register', self)
+        self.btn_register.setObjectName('registerBtn')
+
+        layout.addStretch()
+        layout.addWidget(heading)
+        layout.addWidget(subheading)
+        layout.addWidget(QLabel('Username:', self))
+        layout.addWidget(self.username)
+        layout.addWidget(QLabel('Password:', self))
+        layout.addWidget(self.password)
+        layout.addWidget(self.btn_register)
+        layout.addStretch()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(0, 0, 0))
+    palette.setColor(QPalette.WindowText, QColor(255, 255, 255))
+    palette.setColor(QPalette.Button, QColor(255, 0, 0))
+    palette.setColor(QPalette.ButtonText, QColor(255, 255, 255))
+    app.setPalette(palette)
+
+    window = MainWindow()
+    sys.exit(app.exec())
 
 
-def register():
-    username = register_username_entry.get()
-    password = register_password_entry.get()
-
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
-    existing_user = cursor.fetchone()
-
-    if existing_user:
-        register_status.config(text="Пользователь с таким именем уже существует.")
-    else:
-        token = generate_token()
-        cursor.execute("INSERT INTO users (username, password, token) VALUES (?, ?, ?)", (username, password, token))
-        conn.commit()
-        conn.close()
-        register_status.config(text="Регистрация успешна!")
 
 
 
-def login():
-    username = login_username_entry.get()
-    password = login_password_entry.get()
-
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password))
-    user = cursor.fetchone()
-    conn.close()
-
-    if user:
-        print(user)  # Вывод структуры кортежа для определения правильного индекса
-        login_status.config(text="Вход выполнен успешно.")
-        if len(user) >= 3:
-            open_token_window(user[2])  # Проверка, что индекс существует
-        else:
-            print("Неправильная структура кортежа")
-    else:
-        login_status.config(text="Неверное имя пользователя или пароль.")
 
 
 
-def open_login_register_window():
-    global register_username_entry, register_password_entry, login_username_entry, login_password_entry, register_status, login_status, login_register_window
-    login_register_window = Toplevel(main_window)
-    login_register_window.title("Вход и регистрация")
-    login_register_window.geometry("300x300+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 100)))
-    login_register_window.resizable(False, False)
-    logo = tk.PhotoImage(file='pngimage.png')
-    login_register_window.iconphoto(False, logo)
-
-    register_username_label = Label(login_register_window, text="Имя пользователя:")
-    register_username_label.pack()
-    register_username_entry = Entry(login_register_window)
-    register_username_entry.pack()
-
-    register_password_label = Label(login_register_window, text="Пароль:")
-    register_password_label.pack()
-    register_password_entry = Entry(login_register_window, show="*")
-    register_password_entry.pack()
-
-    register_button = Button(login_register_window, text="Зарегистрироваться", command=register)
-    register_button.pack()
-
-    register_status = Label(login_register_window, text="")
-    register_status.pack()
-
-    login_username_label = Label(login_register_window, text="Имя пользователя:")
-    login_username_label.pack()
-    login_username_entry = Entry(login_register_window)
-    login_username_entry.pack()
-
-    login_password_label = Label(login_register_window, text="Пароль:")
-    login_password_label.pack()
-    login_password_entry = Entry(login_register_window, show="*")
-    login_password_entry.pack()
-
-    login_button = Button(login_register_window, text="Войти", command=login)
-    login_button.pack()
-
-    login_status = Label(login_register_window, text="")
-    login_status.pack()
-
-def send_message():
-    message = entry_box.get()
-
-    conn = sqlite3.connect('messenger.db')
-    cursor = conn.cursor()
-    cursor.execute('INSERT INTO messages (sender, receiver, message) VALUES (?, ?, ?)', ('Sender', 'Receiver', message))
-    conn.commit()
-    conn.close()
-    entry_box.delete(0, END)
-
-def open_messenger_window():
-    global messenger_window
-    messenger_window = Toplevel(main_window)
-    messenger_window.title("Мессенджер")
-    messenger_window.geometry("500x550+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 250), int(main_window.winfo_screenheight()/2 - 275)))
-    logo = tk.PhotoImage(file='pngimage.png')
-    messenger_window.iconphoto(False, logo)
-    messenger_window.resizable(False, False)
-
-    message_box = Text(messenger_window)
-    message_box.pack()
-
-    global entry_box
-    entry_box = Entry(messenger_window)
-    entry_box.pack()
-
-    send_button = Button(messenger_window, text="Send", command=send_message)
-    send_button.pack()
-
-# Остальной код остается таким же, как в предыдущем сообщении.
 
 
-def open_chat_window(token):
-    global chat_window
-    chat_window = Toplevel(main_window)
-    chat_window.title("Чат")
-    chat_window.geometry("300x150+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 75)))
-    chat_window.resizable(False, False)
-    token_label = Label(chat_window, text="Токен пользователя: " + token)
-    token_label.pack()
 
-    message_box = Text(chat_window)
-    message_box.pack()
 
-    global entry_box
-    entry_box = Entry(chat_window)
-    entry_box.pack()
 
-    send_button = Button(chat_window, text="Send", command=send_message)
-    send_button.pack()
 
-def open_token_window(token):
-    global token_window
-    token_window = Toplevel(main_window)
-    token_window.title("Введите токен")
-    token_window.geometry("300x150+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 75)))
-    token_window.resizable(False, False)
-    token_label = Label(token_window, text="Введите токен пользователя:")
-    token_label.pack()
 
-    token_entry = Entry(token_window)
-    token_entry.pack()
 
-    open_chat_button = Button(token_window, text="Открыть чат", command=lambda: open_chat_window(token_entry.get()))
-    open_chat_button.pack()
 
-conn = sqlite3.connect('users.db')
-cursor = conn.cursor()
-cursor.execute('''CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT, token TEXT)''')
-conn.commit()
-conn.close()
-
-def open_main_window():
-    global main_window
-    main_window = Tk()
-    main_window.title("Enter Window")
-
-    login_register_button = Button(main_window, text="Вход и регистрация", command=open_login_register_window)
-    login_register_button.pack()
-
-    main_window.geometry("300x200+{}+{}".format(int(main_window.winfo_screenwidth()/2 - 150), int(main_window.winfo_screenheight()/2 - 100)))
-    main_window.resizable(False, False)
-    logo = tk.PhotoImage(file='pngimage.png')
-    main_window.iconphoto(False, logo)
-    main_window.resizable(False, False)
-
-    main_window.mainloop()
-
-open_main_window()
 
 
 
