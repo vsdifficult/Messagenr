@@ -12,6 +12,13 @@ Regisration window:
 ![image](https://github.com/vsdifficult/Messagenr/assets/82816845/9e57cf83-5174-4d54-9f5d-7bffd200aa17)
 
 
+Enter Token Window:
+
+
+![image](https://github.com/vsdifficult/Messagenr/assets/82816845/739ee01f-465e-4438-9ce4-d4bfe89e5672)
+
+
+
 Chat Window:
 
 
